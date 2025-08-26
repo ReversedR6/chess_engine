@@ -1,0 +1,7 @@
+rm -rf build
+cmake -S . -B build
+cmake --build build
+
+./build/blitz search depth 1
+
+./build/blitz play

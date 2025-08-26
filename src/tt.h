@@ -1,0 +1,1 @@
+int dummy_tt_placeholder = 0;
