@@ -76,6 +76,19 @@ static bool legal_in_pos(const Board& b, const Move& m) {
   return false;
 }
 
+// Find the fully-encoded legal move (with flags) that matches from,to,promo
+static bool find_legal_matching_move(const Board& b, const Move& want, Move& matched) {
+  std::vector<Move> mv;
+  generateMoves(b, mv);
+  for (const auto& x : mv) {
+    if (x.from == want.from && x.to == want.to && x.promo == want.promo) {
+      matched = x; // x carries correct flags (e.g., MF_CASTLE, MF_ENPASSANT)
+      return true;
+    }
+  }
+  return false;
+}
+
 // Print a tiny prompt showing side to move and depth
 static void print_prompt(const Board& b, int depth){
   std::cout << ((b.stm == WHITE) ? "white" : "black") << " to move | depth " << depth << "\n> " << std::flush;
@@ -177,11 +190,12 @@ int main(int argc, char* argv[]) {
       }
 
       // Try to parse a user move in UCI
-      Move m{};
-      if (parse_uci_move(b, line, m)) {
-        if (legal_in_pos(b, m)) {
-          b.makeMove(m);
-          played.push_back(m);
+      Move typed{};
+      if (parse_uci_move(b, line, typed)) {
+        Move flagged{};
+        if (find_legal_matching_move(b, typed, flagged)) {
+          b.makeMove(flagged);           // use flagged move so rook/pawn capture is handled
+          played.push_back(flagged);
           print_prompt(b, depth);
         } else {
           std::cout << "illegal move\n";
